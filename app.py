@@ -39,7 +39,7 @@ with tab1:
         paid_seats = st.slider("Paid Seats", min_value=5, max_value=500, value=100)
         active_seats = st.slider("Current Active Seats (Month 6)", min_value=0, max_value=paid_seats, value=42)
         util_drop_3m = st.slider("3-Month Utilization Change (%)", min_value=-60.0, max_value=20.0, value=-22.0)
-        api_calls_per_user = st.slider("Avg Monthly API Calls per Active User", min_value=50, max_value=3000, value=120)
+        api_calls_per_user = st.slider("Avg Monthly API Calls per Active User", min_value=50, max_value=60000, value=120)
 
     # Calculate Real-Time Unit Economics
     monthly_revenue = paid_seats * unit_price

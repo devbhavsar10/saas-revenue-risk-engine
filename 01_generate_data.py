@@ -40,3 +40,53 @@ archetypes = np.random.choice(
     p=[0.65, 0.25, 0.10],
 )
 accounts_df["true_behavior"] = archetypes
+
+# 2. Generate 12 Months of Usage & Server Cost Logs
+records = []
+for _, row in accounts_df.iterrows():
+  acc_id = row["account_id"]
+  paid = row["paid_seats"]
+  behavior = row["true_behavior"]
+
+  for month in range(1, 13):
+    if behavior == "Healthy":
+      # Uses 75% to 95% of paid seats consistently
+      active_seats = int(paid * np.random.uniform(0.75, 0.95))
+      api_calls = active_seats * np.random.randint(80, 150)
+
+    elif behavior == "Dark_Churn":
+      # Starts strong (85%), then silently drops each month down to ~25%
+      decay_factor = max(0.20, 0.85 - (month * 0.055))
+      active_seats = int(paid * decay_factor * np.random.uniform(0.9, 1.05))
+      api_calls = active_seats * np.random.randint(50, 100)
+
+    elif behavior == "Toxic_Whale":
+      # High seat usage AND massive automated API calls that burn server money
+      active_seats = int(paid * np.random.uniform(0.85, 1.0))
+      api_calls = active_seats * np.random.randint(1500, 3000)
+
+    # Server cost: Each API call costs the company $0.002 in cloud infrastructure
+    server_cost = round(api_calls * 0.002, 2)
+
+    # Target Flag: Did this client downgrade at the end of Month 12?
+    downgraded = 1 if (behavior == "Dark_Churn" and month == 12) else 0
+
+    records.append({
+        "account_id": acc_id,
+        "month": month,
+        "active_seats": active_seats,
+        "api_calls": api_calls,
+        "server_cost": server_cost,
+        "downgraded_at_renewal": downgraded,
+    })
+
+usage_df = pd.DataFrame(records)
+
+# Drop the hidden 'true_behavior' label before saving (in real life, you don't get this hint!)
+accounts_df.drop(columns=["true_behavior"]).to_csv("accounts.csv", index=False)
+usage_df.to_csv("monthly_usage.csv", index=False)
+
+print(
+    "Data generated successfully: accounts.csv (500 rows) & monthly_usage.csv"
+    " (6,000 rows)"
+)
